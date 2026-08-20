@@ -1,0 +1,8 @@
+[server]
+port = 8501
+headless = false
+runOnSave = true
+fileWatcherType = "auto"
+
+[browser]
+gatherUsageStats = false

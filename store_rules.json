@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "rule": "REGLA DE ORO: Workstream es la única fuente de verdad. Solo pertenecen al Google Sheet y al Portal los candidatos en etapa 'Applications' (Review Stage y Availability). Candidatos en Entrevistas, Contratados o Archivados deben ser depurados.",
+    "category": "legal",
+    "created_at": "2026-08-19"
+  },
+  {
+    "id": 4,
+    "rule": "Si el candidato que esta aplicando para algun puesto no tiene respuesta en    Are you legally eligible to work in the US? *  o similares  si no hay respuesta continua adelante no lo descalifiques",
+    "category": "user_defined",
+    "created_at": "2026-08-15"
+  }
+]
