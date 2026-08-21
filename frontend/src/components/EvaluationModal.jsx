@@ -127,6 +127,33 @@ export default function EvaluationModal({ candidate, onClose }) {
             </div>
           )}
 
+          {/* Disqualification Reason Alert Banner */}
+          {(candidate.is_disqualified || candidate.classification === 'DISQUALIFIED') && (
+            <div className="p-4 bg-rose-50/90 border-2 border-rose-300 rounded-2xl space-y-2 text-xs shadow-xs">
+              <div className="flex items-center gap-2 font-extrabold text-rose-900 text-xs uppercase tracking-wider">
+                <span className="text-base">🚫</span>
+                <span>MOTIVO DE DESCALIFICACIÓN AUTOMÁTICA (Framework Oficial)</span>
+              </div>
+              <p className="text-xs text-rose-800 font-medium leading-relaxed">
+                Este postulante fue clasificado como <strong className="text-rose-950">DISQUALIFIED</strong> por haber incurrido en un criterio excluyente configurado en el Google Sheet oficial de Chick-fil-A Stafford:
+              </p>
+              <div className="p-3 bg-white rounded-xl border border-rose-200 text-rose-950 font-semibold space-y-1.5 shadow-2xs">
+                {candidate.disqualification_reasons && candidate.disqualification_reasons.length > 0 ? (
+                  candidate.disqualification_reasons.map((r, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-rose-500 font-bold shrink-0">•</span>
+                      <span className="text-xs leading-relaxed">{r}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-xs leading-relaxed">
+                    {candidate.disqualification_summary || 'Puntaje insuficiente (< 50%) o regla excluyente de disponibilidad/distancia.'}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Systems Analyst Competency Box (Screenshot 3 style) */}
           {isSA && (
             <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-3">

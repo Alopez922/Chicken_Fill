@@ -181,6 +181,43 @@ def format_rich_candidates(raw_candidates: List[Dict[str, Any]]) -> List[Dict[st
         detected_signals = sa_details.get("detected_signals", []) if "system" in puesto.lower() else []
         competency_profile = sa_details.get("competency_profile") if "system" in puesto.lower() else None
 
+        # Collect disqualification reasons
+        disq_reasons = []
+        for d in details:
+            if d.get("disqualifies"):
+                q_text_d = d.get("question", "")
+                a_text_d = d.get("answer", "")
+                disq_reasons.append(f"Pregunta: '{q_text_d}' ➔ Respuesta: '{a_text_d}' (Criterio excluyente en el Google Sheet)")
+
+        dist_m = float(c.get("distancia_millas", 0.0))
+        if dist_m > 35.0 and is_disq:
+            disq_reasons.append(f"Distancia lejana ({dist_m} mi de la tienda)")
+
+        if is_disq and sa_details.get("disqualification_reason"):
+            disq_reasons.append(sa_details.get("disqualification_reason"))
+
+        # Build concise human-readable summary for card
+        disq_summary = ""
+        if is_disq or clasif_label == "DISQUALIFIED":
+            if disq_reasons:
+                first_r = disq_reasons[0].lower()
+                if "felony" in first_r or "antecedentes" in first_r or "convicted" in first_r:
+                    disq_summary = "Antecedentes declarados"
+                elif "scheduled hours" in first_r or "horario" in first_r:
+                    disq_summary = "Horario limitado ('You work scheduled hours only')"
+                elif "grade" in first_r or "school" in first_r or "12th" in first_r:
+                    disq_summary = "Nivel educativo ('12th grade')"
+                elif "distancia" in first_r or "miles" in first_r or dist_m > 35.0:
+                    disq_summary = f"Distancia excesiva ({dist_m} mi)"
+                elif "tecnica" in first_r or "it" in first_r or "analyst" in first_r:
+                    disq_summary = "No cumple requisitos técnicos de TI"
+                else:
+                    disq_summary = disq_reasons[0].split("➔")[-1].replace("(Criterio excluyente en el Google Sheet)", "").strip(" '")[:40]
+            elif score < 50.0:
+                disq_summary = f"Puntaje insuficiente ({score}%)"
+            else:
+                disq_summary = "Criterio excluyente del framework"
+
         formatted.append({
             "uuid": c.get("uuid"),
             "nombre": c_name or "Sin Nombre",
@@ -192,6 +229,8 @@ def format_rich_candidates(raw_candidates: List[Dict[str, Any]]) -> List[Dict[st
             "overall_score": score,
             "score": score,
             "is_disqualified": is_disq,
+            "disqualification_reasons": disq_reasons,
+            "disqualification_summary": disq_summary,
             "choice_score": c.get("choice_score", 0),
             "distance_score": c.get("distance_score", 0),
             "ai_score": c.get("ai_score", 0),

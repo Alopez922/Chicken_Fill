@@ -385,13 +385,28 @@ export default function PortalView() {
                     className={`rounded-2xl border p-5 transition-all flex flex-col justify-between ${cardVisualClasses}`}
                   >
                     <div>
-                      {/* Name & Badges Header */}
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-extrabold text-slate-900 text-sm leading-tight">
+                      {/* Tier 1: Candidate Name + Main Status Badge */}
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-extrabold text-slate-900 text-sm tracking-tight truncate" title={name}>
                           {name}
                         </h3>
 
-                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                        <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-md border shrink-0 ${
+                          cls === 'GOLD' ? 'bg-amber-50 text-amber-700 border-amber-300' :
+                          cls === 'IDEAL' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
+                          cls === 'POTENTIAL' ? 'bg-blue-50 text-blue-700 border-blue-300' :
+                          'bg-rose-50 text-rose-700 border-rose-300'
+                        }`}>
+                          {cls}
+                        </span>
+                      </div>
+
+                      {/* Tier 2: Position */}
+                      <p className="text-xs font-semibold text-slate-500 mt-0.5">{pos}</p>
+
+                      {/* Tier 3: Secondary Badges (CFA Alumni & Multi-Positions in dedicated row) */}
+                      {(hasCFA || isMulti) && (
+                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                           {hasCFA && (
                             <span 
                               title={candidate.cfa_experience_detail || "Experiencia previa en Chick-fil-A"}
@@ -408,18 +423,18 @@ export default function PortalView() {
                               📑 {appliedPositions.length} Puestos
                             </span>
                           )}
-                          <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-md border shrink-0 ${
-                            cls === 'GOLD' ? 'bg-amber-50 text-amber-700 border-amber-300' :
-                            cls === 'IDEAL' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
-                            cls === 'POTENTIAL' ? 'bg-blue-50 text-blue-700 border-blue-300' :
-                            'bg-rose-50 text-rose-700 border-rose-300'
-                          }`}>
-                            {cls}
+                        </div>
+                      )}
+
+                      {/* Tier 4: Disqualification Banner / Reason Pill (if disqualified) */}
+                      {(cls === 'DISQUALIFIED' || candidate.is_disqualified) && (
+                        <div className="mt-2.5 px-2.5 py-1.5 bg-rose-50 border border-rose-200 rounded-lg text-[10.5px] font-bold text-rose-700 flex items-center gap-1.5">
+                          <span className="shrink-0">🚫</span>
+                          <span className="truncate" title={candidate.disqualification_summary || "Criterio excluyente del framework"}>
+                            {candidate.disqualification_summary || "Criterio excluyente del framework"}
                           </span>
                         </div>
-                      </div>
-
-                      <p className="text-xs font-semibold text-slate-500 mt-0.5">{pos}</p>
+                      )}
 
                       {/* Overall Score Bar with Orange Accent Line (Screenshot 2 style) */}
                       <div className="mt-4 pt-2 border-t-2 border-amber-500">
