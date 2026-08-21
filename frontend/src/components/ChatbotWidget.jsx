@@ -5,7 +5,7 @@ export default function ChatbotWidget({ isOpen, onClose, onOpen }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: '¡Hola! Soy tu **Headhunter IA de Chick-fil-A** 🍗\n\nPuedo responder cualquier consulta sobre los 313 candidatos, comparar perfiles o recomendarte a los mejores para cada puesto.\n\nPrueba preguntarme:\n- *¿Quién es el mejor para Back of House y por qué?*\n- *¿Cuáles candidatos califican para Systems Analyst?*\n- *Audita el Google Sheet contra Workstream API*'
+      content: '¡Hola! Soy tu **Headhunter IA de Chick-fil-A** 🍗\n\nPuedo responder cualquier consulta sobre todos los candidatos en el pipeline de selección, comparar perfiles o recomendarte a los mejores según el framework oficial y antecedentes laborales.\n\nPrueba preguntarme:\n- *¿Quién es el mejor para Front of House según el puntaje oficial?*\n- *¿Quién es el mejor para Back of House y qué opinas de su perfil?*\n- *¿Cuáles candidatos califican para Systems Analyst?*\n- *Audita el Google Sheet contra Workstream API*'
     }
   ])
   const [input, setInput] = useState('')
