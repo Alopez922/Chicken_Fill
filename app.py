@@ -62,6 +62,177 @@ st.markdown("""
         gap: 8px;
         box-shadow: 0 3px 8px rgba(221, 0, 49, 0.25);
     }
+
+    /* ── MOBILE CHATBOT OVERLAY ── */
+    #cfa-chat-launcher {
+        display: none;
+        position: fixed;
+        bottom: 22px;
+        right: 20px;
+        z-index: 99999;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
+    #cfa-chat-bubble-hint {
+        background: #fff;
+        color: #1e293b;
+        font-size: 13.5px;
+        font-weight: 600;
+        padding: 10px 14px;
+        border-radius: 14px 14px 4px 14px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+        max-width: 220px;
+        line-height: 1.4;
+        animation: cfaBounceIn 0.5s ease;
+    }
+    #cfa-chat-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #E51636;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 20px rgba(229,22,54,0.45);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        padding: 0;
+    }
+    #cfa-chat-btn:hover { transform: scale(1.08); box-shadow: 0 8px 24px rgba(229,22,54,0.55); }
+    #cfa-chat-btn img { width: 36px; height: 36px; object-fit: contain; }
+
+    /* Chat panel full-screen on mobile */
+    #cfa-chat-panel {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 100000;
+        flex-direction: column;
+        background: #fff;
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+    }
+    #cfa-chat-panel.open { display: flex; }
+    #cfa-chat-panel-header {
+        background: linear-gradient(135deg, #E51636 0%, #B80028 100%);
+        padding: 14px 16px 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    #cfa-chat-panel-header img { width: 38px; height: 38px; object-fit: contain; }
+    .cfa-header-text { flex: 1; }
+    .cfa-header-text h3 { color: #fff; font-size: 15px; font-weight: 800; margin: 0; }
+    .cfa-header-text p { color: rgba(255,255,255,0.82); font-size: 11px; margin: 0; font-weight: 500; }
+    #cfa-chat-close {
+        background: rgba(255,255,255,0.18);
+        border: none;
+        color: #fff;
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.2s;
+    }
+    #cfa-chat-close:hover { background: rgba(255,255,255,0.3); }
+    #cfa-chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: #F8FAFC;
+    }
+    .cfa-msg-row { display: flex; gap: 8px; align-items: flex-end; }
+    .cfa-msg-row.user { flex-direction: row-reverse; }
+    .cfa-msg-avatar {
+        width: 30px; height: 30px;
+        border-radius: 50%;
+        background: #E51636;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .cfa-msg-avatar img { width: 18px; height: 18px; object-fit: contain; }
+    .cfa-msg-bubble {
+        max-width: 78%;
+        padding: 10px 13px;
+        border-radius: 16px 16px 16px 4px;
+        font-size: 13.5px;
+        line-height: 1.5;
+        color: #1e293b;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .cfa-msg-row.user .cfa-msg-bubble {
+        background: #E51636;
+        color: #fff;
+        border: none;
+        border-radius: 16px 16px 4px 16px;
+        box-shadow: 0 2px 8px rgba(229,22,54,0.3);
+    }
+    .cfa-typing-dots { display: flex; gap: 4px; padding: 4px 2px; }
+    .cfa-typing-dots span {
+        width: 7px; height: 7px; border-radius: 50%; background: #94a3b8;
+        animation: cfaDot 1.2s infinite ease-in-out;
+    }
+    .cfa-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .cfa-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes cfaDot { 0%,80%,100%{transform:scale(0.8);opacity:0.5} 40%{transform:scale(1.1);opacity:1} }
+
+    #cfa-chat-input-bar {
+        display: flex;
+        gap: 8px;
+        padding: 10px 12px;
+        background: #fff;
+        border-top: 1px solid #e2e8f0;
+        flex-shrink: 0;
+    }
+    #cfa-chat-input {
+        flex: 1;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 24px;
+        padding: 10px 16px;
+        font-size: 14px;
+        outline: none;
+        font-family: inherit;
+        color: #1e293b;
+        transition: border-color 0.2s;
+    }
+    #cfa-chat-input:focus { border-color: #E51636; }
+    #cfa-chat-send {
+        width: 44px; height: 44px;
+        background: #E51636;
+        border: none;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.2s, transform 0.15s;
+        box-shadow: 0 3px 10px rgba(229,22,54,0.35);
+    }
+    #cfa-chat-send:hover { background: #c8102e; transform: scale(1.06); }
+    #cfa-chat-send svg { width: 18px; height: 18px; }
+
+    @keyframes cfaBounceIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Only show launcher on mobile */
+    @media (max-width: 768px) {
+        #cfa-chat-launcher { display: flex !important; }
+        /* Hide streamlit sidebar on mobile when chat panel is closed */
+        [data-testid="stSidebar"] { display: none !important; }
+    }
+    @media (min-width: 769px) {
+        #cfa-chat-launcher { display: none !important; }
+        #cfa-chat-panel { display: none !important; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -132,6 +303,173 @@ with st.sidebar:
         st.rerun()
 
 # ==========================================
+# MOBILE FLOATING CHATBOT (Solo visible en móvil)
+# ==========================================
+import base64 as _b64
+def _logo_b64():
+    p = "src/assets/cfa_logo_white.png"
+    if not __import__("os").path.exists(p):
+        return ""
+    return _b64.b64encode(open(p,"rb").read()).decode()
+
+_logo = _logo_b64()
+_chat_history_js = json.dumps([
+    {"role": m["role"], "content": m["content"]}
+    for m in st.session_state.get("headhunter_history", [])
+])
+
+# Handle mobile chat submission via query params
+_qp = st.query_params
+_mobile_msg = _qp.get("cfa_mobile_msg", "")
+if _mobile_msg and _mobile_msg not in ["", "__clear__"]:
+    # Process the message the same way as sidebar chat
+    st.session_state["headhunter_history"].append({"role": "user", "content": _mobile_msg})
+    with st.spinner("🍗 Consultando al Headhunter IA..."):
+        reply = run_conversational_agent(_mobile_msg, st.session_state["headhunter_history"])
+    st.session_state["headhunter_history"].append({"role": "assistant", "content": reply})
+    st.query_params.clear()
+    st.rerun()
+
+_chat_history_js = json.dumps([
+    {"role": m["role"], "content": m["content"]}
+    for m in st.session_state.get("headhunter_history", [])
+], ensure_ascii=False)
+
+st.markdown(f"""
+<div id="cfa-chat-launcher">
+  <div id="cfa-chat-bubble-hint">¿Quieres saber algo sobre los candidatos? 🍗 ¡Pregúntame!</div>
+  <button id="cfa-chat-btn" onclick="cfaOpenChat()" aria-label="Abrir chat Headhunter IA">
+    <img src="data:image/png;base64,{_logo}" alt="CFA" />
+  </button>
+</div>
+
+<div id="cfa-chat-panel">
+  <div id="cfa-chat-panel-header">
+    <img src="data:image/png;base64,{_logo}" alt="CFA logo" />
+    <div class="cfa-header-text">
+      <h3>Headhunter IA 🍗</h3>
+      <p>CFA Stafford · En línea</p>
+    </div>
+    <button id="cfa-chat-close" onclick="cfaCloseChat()" aria-label="Cerrar chat">✕</button>
+  </div>
+  <div id="cfa-chat-messages"></div>
+  <div id="cfa-chat-input-bar">
+    <input id="cfa-chat-input" type="text" placeholder="Escribe una pregunta..." autocomplete="off"
+      onkeydown="if(event.key==='Enter')cfaSendMsg()" />
+    <button id="cfa-chat-send" onclick="cfaSendMsg()" aria-label="Enviar">
+      <svg fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {{
+  var HISTORY = {_chat_history_js};
+  var hintHidden = false;
+
+  function renderHistory() {{
+    var box = document.getElementById('cfa-chat-messages');
+    if (!box) return;
+    box.innerHTML = '';
+    HISTORY.forEach(function(m) {{
+      box.appendChild(buildBubble(m.role, m.content));
+    }});
+    box.scrollTop = box.scrollHeight;
+  }}
+
+  function buildBubble(role, text) {{
+    var row = document.createElement('div');
+    row.className = 'cfa-msg-row' + (role === 'user' ? ' user' : '');
+    if (role !== 'user') {{
+      var av = document.createElement('div');
+      av.className = 'cfa-msg-avatar';
+      av.innerHTML = '<img src="data:image/png;base64,{_logo}" alt="AI"/>';
+      row.appendChild(av);
+    }}
+    var bub = document.createElement('div');
+    bub.className = 'cfa-msg-bubble';
+    // Render markdown bold and line breaks simply
+    bub.innerHTML = text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g,'<em>$1</em>')
+      .replace(/\n/g,'<br>');
+    row.appendChild(bub);
+    return row;
+  }}
+
+  function showTyping() {{
+    var box = document.getElementById('cfa-chat-messages');
+    var row = document.createElement('div');
+    row.className = 'cfa-msg-row';
+    row.id = 'cfa-typing';
+    var av = document.createElement('div');
+    av.className = 'cfa-msg-avatar';
+    av.innerHTML = '<img src="data:image/png;base64,{_logo}" alt="AI"/>';
+    row.appendChild(av);
+    var bub = document.createElement('div');
+    bub.className = 'cfa-msg-bubble';
+    bub.innerHTML = '<div class="cfa-typing-dots"><span></span><span></span><span></span></div>';
+    row.appendChild(bub);
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+  }}
+
+  window.cfaOpenChat = function() {{
+    var panel = document.getElementById('cfa-chat-panel');
+    panel.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    if (!hintHidden) {{
+      var hint = document.getElementById('cfa-chat-bubble-hint');
+      if (hint) hint.style.display = 'none';
+      hintHidden = true;
+    }}
+    renderHistory();
+    setTimeout(function() {{
+      var inp = document.getElementById('cfa-chat-input');
+      if (inp) inp.focus();
+    }}, 300);
+  }};
+
+  window.cfaCloseChat = function() {{
+    var panel = document.getElementById('cfa-chat-panel');
+    panel.classList.remove('open');
+    document.body.style.overflow = '';
+  }};
+
+  window.cfaSendMsg = function() {{
+    var inp = document.getElementById('cfa-chat-input');
+    if (!inp) return;
+    var msg = inp.value.trim();
+    if (!msg) return;
+    inp.value = '';
+    // Show user bubble immediately
+    var box = document.getElementById('cfa-chat-messages');
+    box.appendChild(buildBubble('user', msg));
+    box.scrollTop = box.scrollHeight;
+    showTyping();
+    HISTORY.push({{role:'user', content:msg}});
+    // Submit to Streamlit via query param
+    var url = window.location.pathname + '?cfa_mobile_msg=' + encodeURIComponent(msg);
+    window.location.href = url;
+  }};
+
+  // Auto-hide hint after 6s
+  setTimeout(function() {{
+    var hint = document.getElementById('cfa-chat-bubble-hint');
+    if (hint && !hintHidden) {{
+      hint.style.transition = 'opacity 0.5s';
+      hint.style.opacity = '0';
+      setTimeout(function() {{ if(hint) hint.style.display='none'; }}, 500);
+    }}
+  }}, 6000);
+}})();
+</script>
+""", unsafe_allow_html=True)
+
+# ==========================================
 # LIENZO PRINCIPAL CON PESTAÑAS
 # ==========================================
 tab_portal, tab_audit, tab_criteria = st.tabs([
@@ -139,6 +477,7 @@ tab_portal, tab_audit, tab_criteria = st.tabs([
     "🔍 Auditoría Workstream en Vivo",
     "📐 Rúbricas Oficiales (7 Puestos)"
 ])
+
 
 # ==========================================
 # PESTAÑA 1: PORTAL DE CANDIDATOS NATIVO (HTML + JS 0ms)
