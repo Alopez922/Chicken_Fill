@@ -1,26 +1,42 @@
-FROM python:3.11-slim
+# ==========================================
+# STAGE 1: Build React Frontend (Vite + Tailwind)
+# ==========================================
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app/frontend
 
-# Evitar buffers y optimizar ejecución
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm install
+
+COPY frontend/ ./
+RUN npm run build
+
+# ==========================================
+# STAGE 2: Python Backend Runtime (FastAPI + Uvicorn)
+# ==========================================
+FROM python:3.11-slim
+WORKDIR /app
+
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PORT=8080
 
-WORKDIR /app
-
-# Instalar dependencias del sistema
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Instalar dependencias de Python
+# Install Python requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar todo el código fuente y assets
-COPY . .
+# Copy application backend code
+COPY src/ ./src/
+COPY server.py .
 
-# Exponer el puerto por defecto de Google Cloud Run
+# Copy built frontend assets from stage 1
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
 EXPOSE 8080
 
-# Comando para ejecutar Streamlit
-CMD ["streamlit", "run", "app.py", "--server.port=8080", "--server.address=0.0.0.0", "--server.enableCORS=false", "--server.enableXsrfProtection=false", "--server.headless=true"]
+CMD ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
+

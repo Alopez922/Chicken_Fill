@@ -32,3 +32,8 @@ desktop.ini
 # Temporary Runtime Cache Files
 src/tools/sa_eval_cache.json
 src/tools/portal_scored_cache.json
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+
