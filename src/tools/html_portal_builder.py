@@ -873,6 +873,111 @@ def build_portal_html(portal_data: Dict[str, Any]) -> str:
       font-weight: 600;
       cursor: pointer;
     }}
+
+    /* ── OPTIMIZACIÓN RESPONSIVA (TABLETS Y MÓVILES) ── */
+    @media (max-width: 960px) {{
+      header {{
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px 16px;
+      }}
+      .header-actions {{
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-left: 0;
+      }}
+      .header-search {{
+        width: 100%;
+        flex: 1 1 100%;
+      }}
+      .stats-bar {{
+        padding: 10px 14px 4px;
+        gap: 8px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+      }}
+      .stat-card {{
+        padding: 8px 10px;
+        min-width: 0;
+      }}
+      .stat-card .stat-val {{
+        font-size: 1.25rem;
+      }}
+      .main {{
+        flex-direction: column;
+      }}
+      .sidebar {{
+        width: 100%;
+        min-width: 100%;
+        min-height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 12px 14px;
+      }}
+      .sidebar-guide-box {{
+        display: none;
+      }}
+      .content {{
+        padding: 12px 14px;
+      }}
+      .cards-grid {{
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }}
+      .modal {{
+        width: 96%;
+        max-height: 92vh;
+      }}
+      .modal-header {{
+        padding: 14px 16px 10px;
+      }}
+      .modal-body {{
+        padding: 14px 16px 18px;
+        gap: 14px;
+      }}
+      .modal-scores {{
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }}
+      .sa-profile-grid {{
+        grid-template-columns: 1fr;
+      }}
+      .pagination-bar {{
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+      }}
+      .pagination-pages {{
+        flex-wrap: wrap;
+        justify-content: center;
+      }}
+    }}
+
+    @media (max-width: 480px) {{
+      .header-brand h1 {{
+        font-size: 0.95rem;
+      }}
+      .card-stats {{
+        grid-template-columns: 1fr 1fr 1fr;
+        padding: 6px;
+      }}
+      .card-stat-val {{
+        font-size: 0.9rem;
+      }}
+      .card-stat-label {{
+        font-size: 0.55rem;
+      }}
+      .modal-title {{
+        font-size: 1.05rem;
+      }}
+      .modal-score-badge {{
+        font-size: 1.2rem;
+      }}
+    }}
   </style>
 </head>
 <body>
