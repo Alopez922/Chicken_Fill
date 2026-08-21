@@ -18,18 +18,29 @@ SCOPES = [
 SERVICE_ACCOUNT_FILE = "service_account.json"
 
 def get_gspread_client() -> Optional[gspread.Client]:
-    """Obtiene el cliente autenticado de gspread si existe el archivo service_account.json."""
+    """Obtiene el cliente autenticado de gspread desde archivo o variable de entorno GOOGLE_SERVICE_ACCOUNT_JSON."""
+    # 1. Desde variable de entorno
+    sa_env = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
+    if sa_env:
+        try:
+            info = json.loads(sa_env)
+            creds = Credentials.from_service_account_info(info, scopes=SCOPES)
+            return gspread.authorize(creds)
+        except Exception as e:
+            print(f"[gspread Env Auth Error] {e}")
+
+    # 2. Desde archivo físico
     if os.path.exists(SERVICE_ACCOUNT_FILE):
         try:
             creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
             return gspread.authorize(creds)
         except Exception as e:
-            print(f"[gspread Auth Error] {e}")
+            print(f"[gspread File Auth Error] {e}")
     return None
 
 def is_service_account_configured() -> bool:
     """Verifica si las credenciales de Service Account están configuradas."""
-    return os.path.exists(SERVICE_ACCOUNT_FILE)
+    return bool(os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()) or os.path.exists(SERVICE_ACCOUNT_FILE)
 
 def apply_reconciliation_to_sheet(sheet_id: str = DEFAULT_SHEET_ID) -> Dict[str, Any]:
     """
