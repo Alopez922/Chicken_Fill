@@ -172,35 +172,35 @@ def render_cfa_login():
         }}
         
         /* ── OPTIMIZACIÓN RESPONSIVA PARA MÓVILES (iOS / Android) ── */
-        @media (max-width: 640px) {
-            .login-wrapper {
+        @media (max-width: 640px) {{
+            .login-wrapper {{
                 margin-top: 2vh !important;
                 margin-bottom: 1.5vh !important;
-            }
-            .login-white-logo-img {
+            }}
+            .login-white-logo-img {{
                 width: 190px !important;
                 margin-bottom: 16px !important;
-            }
-            [data-testid="stForm"] {
+            }}
+            [data-testid="stForm"] {{
                 padding: 24px 20px 20px 20px !important;
                 max-width: 92vw !important;
                 border-radius: 16px !important;
-            }
-            .form-header-title {
+            }}
+            .form-header-title {{
                 font-size: 20px !important;
-            }
-            .form-header-subtitle {
+            }}
+            .form-header-subtitle {{
                 font-size: 12.5px !important;
                 margin-bottom: 16px !important;
-            }
-            div[data-testid="stTextInputRootElement"] input {
+            }}
+            div[data-testid="stTextInputRootElement"] input {{
                 font-size: 16px !important; /* Evita zoom automático en Safari iOS */
-            }
-            [data-testid="stFormSubmitButton"] > button {
+            }}
+            [data-testid="stFormSubmitButton"] > button {{
                 padding: 13px 0 !important;
                 font-size: 16px !important;
-            }
-        }
+            }}
+        }}
     </style>
     """, unsafe_allow_html=True)
     
