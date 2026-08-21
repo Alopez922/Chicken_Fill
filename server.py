@@ -5,7 +5,6 @@ Serves both the REST API (/api/*) and the React SPA static files in a Single Doc
 import os
 import json
 import logging
-import urllib.parse
 from typing import List, Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -70,18 +69,132 @@ def login(req: LoginRequest):
     raise HTTPException(status_code=401, detail="Credenciales invalidas")
 
 # ==========================================
-# CANDIDATES PORTAL API
+# CANDIDATES PORTAL API (Rich Data)
 # ==========================================
+def format_rich_candidates(raw_candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    formatted = []
+    for c in raw_candidates:
+        puesto = c.get("puesto", "Front of House Team Member")
+        score = float(c.get("overall_score", 0.0))
+        is_disq = bool(c.get("is_disqualified", False))
+        clasif_raw = str(c.get("classification", "Potential")).upper()
+
+        if is_disq or clasif_raw == "DISQUALIFIED":
+            clasif_label = "DISQUALIFIED"
+        elif clasif_raw == "GOLD":
+            clasif_label = "GOLD"
+        elif clasif_raw == "IDEAL":
+            clasif_label = "IDEAL"
+        else:
+            clasif_label = "POTENTIAL"
+
+        details = c.get("details", [])
+        sa_details = c.get("sa_details") or {}
+        qa_list = c.get("parsed_qa", [])
+
+        open_text_items = []
+        choice_items = []
+        seen_q = set()
+
+        for d in details:
+            q_name = str(d.get("question", "")).strip()
+            q_ans = str(d.get("answer", "")).strip()
+            q_score = d.get("score", 0.0)
+            q_max = d.get("max_score", 10.0)
+            q_reason = str(d.get("reason", "")).strip()
+            cat = str(d.get("category", "")).lower()
+            is_text = d.get("is_open_text", False) or "open text" in cat or "ai" in cat or "study" in q_name.lower() or "jobs" in q_name.lower() or "tell us" in q_name.lower()
+
+            if "distance" in cat or "commute" in q_name.lower():
+                continue
+
+            seen_q.add(q_name.lower().replace("*", "").replace("?", "").strip())
+
+            if is_text:
+                open_text_items.append({
+                    "question": q_name,
+                    "answer": q_ans if q_ans else "No especificado",
+                    "score": q_score,
+                    "max_score": q_max,
+                    "reason": q_reason
+                })
+            else:
+                pts = int(q_score) if isinstance(q_score, (int, float)) and float(q_score).is_integer() else q_score
+                choice_items.append({
+                    "question": q_name,
+                    "answer": q_ans if q_ans else "—",
+                    "score": pts,
+                    "max_score": q_max
+                })
+
+        for item in qa_list:
+            q_raw = str(item.get("pregunta", "")).strip()
+            a_raw = str(item.get("respuesta", "")).strip()
+            q_clean = q_raw.lower().replace("*", "").replace("?", "").strip()
+            if q_clean not in seen_q and len(a_raw) > 2 and a_raw.lower() not in ["yes", "no", "n/a"]:
+                seen_q.add(q_clean)
+                open_text_items.append({
+                    "question": q_raw,
+                    "answer": a_raw,
+                    "score": None,
+                    "max_score": None,
+                    "reason": ""
+                })
+
+        detected_signals = sa_details.get("detected_signals", []) if "system" in puesto.lower() else []
+        competency_profile = sa_details.get("competency_profile") if "system" in puesto.lower() else None
+
+        formatted.append({
+            "uuid": c.get("uuid"),
+            "nombre": c.get("nombre", "Sin Nombre"),
+            "name": c.get("nombre", "Sin Nombre"),
+            "puesto": puesto,
+            "position": puesto,
+            "clasificacion": clasif_label,
+            "classification": clasif_label,
+            "overall_score": score,
+            "score": score,
+            "is_disqualified": is_disq,
+            "choice_score": c.get("choice_score", 0),
+            "distance_score": c.get("distance_score", 0),
+            "ai_score": c.get("ai_score", 0),
+            "total_points": c.get("total_points", 0),
+            "max_points": c.get("max_points", 100),
+            "distance_miles": c.get("distancia_millas", 0.0),
+            "distancia_texto": c.get("distancia_texto", "—"),
+            "address": c.get("direccion", "Dirección no especificada"),
+            "applied_date": c.get("fecha_postulacion", ""),
+            "phone": c.get("telefono", "—"),
+            "email": c.get("email", "—"),
+            "summary": c.get("summary") or sa_details.get("disqualification_reason") or "",
+            "detected_signals": detected_signals,
+            "competency_profile": competency_profile,
+            "open_text_items": open_text_items,
+            "choice_items": choice_items,
+            "sa_details": sa_details
+        })
+    return formatted
+
 @app.get("/api/candidates")
 def get_candidates(force_refresh: bool = False):
     try:
         data = get_portal_scored_candidates(force_refresh=force_refresh)
-        cands = data.get("candidatos") or data.get("candidates") or []
+        raw_cands = data.get("candidatos") or data.get("candidates") or []
+        rich_cands = format_rich_candidates(raw_cands)
+
+        kpis = {
+            "total": len(rich_cands),
+            "gold": sum(1 for c in rich_cands if c["classification"] == "GOLD"),
+            "ideal": sum(1 for c in rich_cands if c["classification"] == "IDEAL"),
+            "potential": sum(1 for c in rich_cands if c["classification"] == "POTENTIAL"),
+            "disqualified": sum(1 for c in rich_cands if c["classification"] == "DISQUALIFIED")
+        }
+
         return {
             "success": True,
-            "total": len(cands),
-            "kpis": data.get("kpis", {}),
-            "candidates": cands
+            "total": len(rich_cands),
+            "kpis": kpis,
+            "candidates": rich_cands
         }
     except Exception as e:
         logger.error(f"Error fetching candidates: {e}")
@@ -140,7 +253,6 @@ def sync_audit_sheet():
 # ==========================================
 @app.get("/api/rubrics")
 def get_rubrics_positions():
-    # Only return distinct canonical position names
     canonical = [
         "Front of House Team Member",
         "Back of House Team Member",

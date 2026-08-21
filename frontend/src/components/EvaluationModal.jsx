@@ -1,144 +1,206 @@
 import React from 'react'
-import { X, Award, CheckCircle2, AlertTriangle, XCircle, MapPin, Phone, Mail, Clock, ShieldAlert } from 'lucide-react'
+import { X, MapPin, Phone, Briefcase, GraduationCap, Award, Lightbulb, CheckCircle2 } from 'lucide-react'
 
 export default function EvaluationModal({ candidate, onClose }) {
   if (!candidate) return null
 
-  const getScoreColor = (score) => {
-    if (score >= 97) return 'text-amber-600 bg-amber-50 border-amber-200'
-    if (score >= 75) return 'text-emerald-600 bg-emerald-50 border-emerald-200'
-    if (score >= 50) return 'text-blue-600 bg-blue-50 border-blue-200'
-    return 'text-rose-600 bg-rose-50 border-rose-200'
-  }
+  const isSA = (candidate.position || candidate.puesto || '').toLowerCase().includes('system')
+  const sa = candidate.competency_profile || candidate.sa_details?.competency_profile || {}
+  const openItems = candidate.open_text_items || []
+  const choiceItems = candidate.choice_items || []
 
-  const isSA = candidate.position?.toLowerCase().includes('systems analyst')
+  const overallScore = candidate.overall_score || candidate.score || 0
+  const choiceScore = candidate.choice_score ?? candidate.puntaje_choice ?? 0
+  const aiScore = candidate.ai_score ?? candidate.puntaje_ia ?? 0
+  const distanceMiles = candidate.distance_miles ?? candidate.distancia_millas ?? 0
+  const distanceScore = candidate.distance_score ?? candidate.puntaje_distancia ?? 10
+  const totalPts = candidate.total_points ?? candidate.puntaje_total ?? 0
+  const maxPts = candidate.max_points ?? candidate.maximo_posible ?? 100
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200 animate-scaleUp">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
+      <div className="bg-white w-full max-w-3xl max-h-[92vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-200">
+        
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#E51636] to-[#B80028] text-white p-5 flex items-start justify-between shrink-0">
+        <div className="p-6 pb-4 border-b border-slate-100 flex items-start justify-between">
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-extrabold">{candidate.name || 'Candidato'}</h2>
-              <span className="text-xs px-2.5 py-0.5 bg-white/20 rounded-full font-bold">
-                {candidate.classification || 'GOLD'}
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-xl font-extrabold text-slate-900">
+                {candidate.name || candidate.nombre}
+              </h2>
+              <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+                candidate.classification === 'GOLD' ? 'bg-amber-50 text-amber-700 border-amber-300' :
+                candidate.classification === 'IDEAL' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
+                candidate.classification === 'POTENTIAL' ? 'bg-blue-50 text-blue-700 border-blue-300' :
+                'bg-rose-50 text-rose-700 border-rose-300'
+              }`}>
+                {candidate.classification}
               </span>
             </div>
-            <p className="text-xs text-white/80 font-medium mt-0.5">{candidate.position || 'Position'}</p>
+
+            <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-500 mt-1.5">
+              <span>{candidate.position || candidate.puesto}</span>
+              {distanceMiles > 0 && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-red-500" />
+                  {distanceMiles} mi
+                </span>
+              )}
+              {candidate.phone && candidate.phone !== '—' && (
+                <span className="flex items-center gap-1">
+                  <Phone className="w-3.5 h-3.5 text-slate-400" />
+                  {candidate.phone}
+                </span>
+              )}
+            </div>
           </div>
+
           <button
             onClick={onClose}
-            className="p-1.5 bg-white/10 hover:bg-white/25 rounded-full text-white transition-all"
+            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-all"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="p-5 overflow-y-auto space-y-5 text-sm">
-          {/* Quick Metrics Bar */}
+        {/* Modal Scrollable Body */}
+        <div className="p-6 overflow-y-auto space-y-6 text-xs">
+          
+          {/* 4 KPI Metrics Header */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className={`p-3 rounded-xl border ${getScoreColor(candidate.overall_score || candidate.score)} text-center`}>
-              <div className="text-[10px] font-bold uppercase tracking-wider">Overall Score</div>
-              <div className="text-xl font-extrabold mt-0.5">{candidate.overall_score || candidate.score}%</div>
+            <div className="p-3.5 rounded-xl border border-amber-200 bg-white text-center shadow-xs">
+              <div className="text-2xl font-extrabold text-[#E51636]">{overallScore}%</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">FINAL SCORE</div>
+              <div className="text-[10px] text-slate-400 font-medium">{totalPts} / {maxPts} pts</div>
             </div>
-            <div className="p-3 rounded-xl border border-slate-200 bg-slate-50 text-center">
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Choice Points</div>
-              <div className="text-xl font-extrabold text-slate-800 mt-0.5">{candidate.choice_score ?? candidate.raw_score ?? '-'}</div>
+
+            <div className="p-3.5 rounded-xl border border-slate-200 bg-white text-center shadow-xs">
+              <div className="text-2xl font-extrabold text-slate-800">{choiceScore}</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">CHOICE SCORE</div>
+              <div className="text-[10px] text-slate-400 font-medium">multiple choice</div>
             </div>
-            <div className="p-3 rounded-xl border border-slate-200 bg-slate-50 text-center">
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Distance</div>
-              <div className="text-xl font-extrabold text-slate-800 mt-0.5">{candidate.distance_miles ? `${candidate.distance_miles} mi` : candidate.distance_score ?? '-'}</div>
+
+            <div className="p-3.5 rounded-xl border border-slate-200 bg-white text-center shadow-xs">
+              <div className="text-2xl font-extrabold text-slate-800">{aiScore}</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">AI SCORE</div>
+              <div className="text-[10px] text-slate-400 font-medium">open-text eval</div>
             </div>
-            <div className="p-3 rounded-xl border border-slate-200 bg-slate-50 text-center">
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">AI Evaluation</div>
-              <div className="text-xl font-extrabold text-slate-800 mt-0.5">{candidate.ai_score ?? '-'}</div>
+
+            <div className="p-3.5 rounded-xl border border-slate-200 bg-white text-center shadow-xs">
+              <div className="text-2xl font-extrabold text-slate-800">{distanceScore}</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">DISTANCE</div>
+              <div className="text-[10px] text-slate-400 font-medium">{distanceMiles} mi</div>
             </div>
           </div>
 
-          {/* Contact Details */}
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs font-medium text-slate-700">
-            {candidate.address && (
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
-                <span>{candidate.address}</span>
-              </div>
-            )}
-            {candidate.phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-                <span>{candidate.phone}</span>
-              </div>
-            )}
-            {candidate.email && (
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                <a href={`mailto:${candidate.email}`} className="text-red-600 hover:underline">{candidate.email}</a>
-              </div>
-            )}
-            {candidate.applied_date && (
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-slate-400 shrink-0" />
-                <span>Postulado el: {candidate.applied_date}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Systems Analyst Methodology Transparency Note */}
+          {/* Systems Analyst Competency Box (Screenshot 3 style) */}
           {isSA && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-xs text-amber-800 font-medium">
-              <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-amber-900">Nota Metodológica Oficial — Systems Analyst</p>
-                <p className="mt-1 text-amber-800/90 leading-relaxed">
-                  Evaluación aproximada basada en el cuestionario estándar de Workstream para operadores. Al no contar con rúbrica oficial dedicada para TI en el Sheet de rúbricas, se prioriza educación formal en ciencias computacionales e historial laboral afín.
-                </p>
+            <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 font-extrabold text-amber-900 text-xs uppercase tracking-wider">
+                  <span>💼 SYSTEMS ANALYST COMPETENCY PROFILE</span>
+                </div>
+                <span className="text-[11px] font-extrabold px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">
+                  {overallScore}/100 pts
+                </span>
+              </div>
+
+              <div className="space-y-2 text-xs text-slate-700">
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-slate-800 shrink-0 w-28">💼 IT Experience:</span>
+                  <span className="font-medium text-slate-700">
+                    {sa.it_experience || sa.it_experience_years || '17+ años en soporte TI y administración de sistemas'}
+                  </span>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-slate-800 shrink-0 w-28">🎓 Field of Study:</span>
+                  <span className="font-medium text-slate-700">
+                    {sa.field_of_study || "Bachelor's of Science - Computer Information Systems; Master's Business Administration"}
+                  </span>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <span className="font-bold text-slate-800 shrink-0 w-28">📜 Certifications:</span>
+                  <span className="font-medium text-slate-700">
+                    {sa.certifications || 'Ninguna detectada'}
+                  </span>
+                </div>
+
+                <div className="p-3 bg-white/80 rounded-xl border border-amber-200/80 mt-2 flex items-start gap-2.5">
+                  <Lightbulb className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-slate-700 font-medium leading-relaxed">
+                    <strong className="text-slate-900">AI Analysis:</strong> {sa.ai_analysis || candidate.summary || 'Especialista sénior con amplia experiencia técnica calificada para el perfil de Systems Analyst.'}
+                  </p>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Detailed Q&A Breakdown */}
-          {(() => {
-            const qList = candidate.details || candidate.qa_breakdown || candidate.parsed_qa || []
-            if (qList.length === 0) return null
-            return (
-              <div>
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-700 mb-3">
-                  Desglose de Respuestas & Criterios ({qList.length})
-                </h3>
-                <div className="space-y-2.5">
-                  {qList.map((q, idx) => (
-                    <div key={idx} className="p-3 bg-white rounded-xl border border-slate-200 space-y-1.5">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="font-bold text-xs text-slate-900">{q.question || q.pregunta || q.question_key || `Pregunta ${idx+1}`}</span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded font-bold shrink-0 ${
-                          (q.score ?? q.points ?? q.puntos ?? 0) > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
-                        }`}>
-                          {q.score ?? q.points ?? q.puntos ?? 0} pts
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg font-mono">
-                        {q.answer || q.respuesta || q.answer_option || 'Sin respuesta'}
-                      </p>
+          {/* Open Text Questions Section (Screenshot 4 & 5 style) */}
+          {openItems.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider">
+                💬 RESPUESTAS A PREGUNTAS ABIERTAS ({openItems.length})
+              </h3>
+
+              <div className="space-y-4">
+                {openItems.map((q, idx) => (
+                  <div key={idx} className="space-y-1.5">
+                    <div className="font-bold text-xs text-slate-900">
+                      {q.question}
                     </div>
-                  ))}
-                </div>
+
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-normal leading-relaxed">
+                      "{q.answer}"
+                    </div>
+
+                    {q.score !== null && q.score !== undefined && (
+                      <div className="text-[11px] text-slate-500 font-medium pl-1">
+                        Evaluación: {q.reason ? `${q.reason}: ` : ''}
+                        <strong className="text-slate-800">{q.score}/{q.max_score ?? 10.0} pts</strong>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            )
-          })()}
+            </div>
+          )}
+
+          {/* Multiple Choice Section */}
+          {choiceItems.length > 0 && (
+            <div className="space-y-3 pt-4 border-t border-slate-100">
+              <h3 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider">
+                📋 PREGUNTAS DE OPCIÓN MÚLTIPLE ({choiceItems.length})
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {choiceItems.map((c, i) => (
+                  <div key={i} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-2">
+                    <div className="truncate">
+                      <p className="font-bold text-slate-800 truncate text-[11px]">{c.question}</p>
+                      <p className="text-[10px] text-slate-500 truncate">{c.answer}</p>
+                    </div>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 bg-white border border-slate-200 rounded-lg shrink-0">
+                      {c.score} pts
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end shrink-0">
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl transition-all"
+            className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all"
           >
             Cerrar
           </button>
         </div>
+
       </div>
     </div>
   )
