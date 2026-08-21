@@ -327,8 +327,12 @@ if _mobile_msg and _mobile_msg not in ["", "__clear__"]:
     with st.spinner("🍗 Consultando al Headhunter IA..."):
         reply = run_conversational_agent(_mobile_msg, st.session_state["headhunter_history"])
     st.session_state["headhunter_history"].append({"role": "assistant", "content": reply})
+    st.session_state["mobile_chat_open"] = True   # ← re-abrir el panel después del rerun
     st.query_params.clear()
     st.rerun()
+
+# Consume flag: tell JS whether to auto-open the panel
+_auto_open_chat = "true" if st.session_state.pop("mobile_chat_open", False) else "false"
 
 _chat_history_js = json.dumps([
     {"role": m["role"], "content": m["content"]}
@@ -370,6 +374,7 @@ components.html(f"""
 (function() {{
   var LOGO = "data:image/png;base64,{_logo}";
   var HISTORY = {_chat_history_js};
+  var AUTO_OPEN = {_auto_open_chat};
   var hintHidden = false;
   var doc = window.parent.document;
 
@@ -484,6 +489,23 @@ components.html(f"""
       setTimeout(function() {{ if(hint) hint.style.display='none'; }}, 500);
     }}
   }}, 6000);
+
+  // ← AUTO-REOPEN panel after AI response (survives st.rerun)
+  if (AUTO_OPEN) {{
+    waitForEl('cfa-chat-panel', function(panel) {{
+      panel.classList.add('open');
+      doc.body.style.overflow = 'hidden';
+      hintHidden = true;
+      renderHistory();
+      // Scroll to bottom after brief delay so messages are painted
+      setTimeout(function() {{
+        var box = doc.getElementById('cfa-chat-messages');
+        if (box) box.scrollTop = box.scrollHeight;
+        var inp = doc.getElementById('cfa-chat-input');
+        if (inp) inp.focus();
+      }}, 200);
+    }});
+  }}
 }})();
 </script>
 """, height=0)
