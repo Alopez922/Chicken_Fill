@@ -63,24 +63,53 @@ st.markdown("""
         box-shadow: 0 3px 8px rgba(221, 0, 49, 0.25);
     }
 
-    /* ── FLOATING LAUNCHER BUTTON (Mobile & Desktop) ── */
+    /* ── FLOATING LAUNCHER BUTTON (Mobile) ── */
+    .st-key-cfa_fab_btn {
+        position: fixed !important;
+        bottom: 22px !important;
+        right: 22px !important;
+        z-index: 9999999 !important;
+        width: auto !important;
+    }
+    .st-key-cfa_fab_btn button {
+        background: linear-gradient(135deg, #E51636 0%, #B80028 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 50px !important;
+        padding: 12px 20px !important;
+        font-size: 14.5px !important;
+        font-weight: 800 !important;
+        box-shadow: 0 6px 24px rgba(229, 22, 54, 0.5) !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    .st-key-cfa_fab_btn button:hover {
+        transform: scale(1.05) !important;
+        box-shadow: 0 8px 30px rgba(229, 22, 54, 0.65) !important;
+    }
+    .st-key-cfa_fab_btn button:active {
+        transform: scale(0.96) !important;
+    }
+
     .cfa-floating-fab-container {
         position: fixed;
-        bottom: 22px;
+        bottom: 80px;
         right: 22px;
-        z-index: 999999;
+        z-index: 9999998;
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 8px;
         pointer-events: none;
     }
     .cfa-floating-fab-hint {
         background: #ffffff;
         color: #1e293b;
-        font-size: 12.5px;
+        font-size: 12px;
         font-weight: 700;
-        padding: 8px 14px;
+        padding: 8px 13px;
         border-radius: 14px 14px 2px 14px;
         box-shadow: 0 4px 18px rgba(0,0,0,0.18);
         border: 1px solid #fee2e2;
@@ -92,33 +121,6 @@ st.markdown("""
     @keyframes cfaPulse {
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-4px); }
-    }
-
-    /* Target FAB button in Streamlit */
-    div[data-testid="stButton"]:has(button[key="cfa_fab_trigger_btn"]) {
-        position: fixed !important;
-        bottom: 22px !important;
-        right: 22px !important;
-        z-index: 1000000 !important;
-    }
-    button[key="cfa_fab_trigger_btn"] {
-        width: 58px !important;
-        height: 58px !important;
-        border-radius: 50% !important;
-        background: linear-gradient(135deg, #E51636 0%, #B80028 100%) !important;
-        color: white !important;
-        font-size: 26px !important;
-        border: none !important;
-        box-shadow: 0 6px 20px rgba(229, 22, 54, 0.45) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-        padding: 0 !important;
-    }
-    button[key="cfa_fab_trigger_btn"]:hover {
-        transform: scale(1.08) !important;
-        box-shadow: 0 8px 24px rgba(229, 22, 54, 0.55) !important;
     }
 
     /* ── STREAMLIT DIALOG CFA STYLING ── */
@@ -160,10 +162,11 @@ st.markdown("""
         .cfa-floating-fab-container {
             display: none !important;
         }
-        div[data-testid="stButton"]:has(button[key="cfa_fab_trigger_btn"]) {
+        .st-key-cfa_fab_btn {
             display: none !important;
         }
     }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -291,8 +294,9 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-if st.button("🍗", key="cfa_fab_trigger_btn", help="Abrir Headhunter IA Copilot"):
+if st.button("🍗 Headhunter IA", key="cfa_fab_btn", help="Abrir Headhunter IA Copilot"):
     render_headhunter_modal_dialog()
+
 
 
 
