@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Search, RefreshCw, MapPin, Calendar, Phone, Eye, ArrowUpDown, HelpCircle } from 'lucide-react'
+import { Search, RefreshCw, MapPin, Calendar, Phone, Eye, ArrowUpDown, HelpCircle, SlidersHorizontal, ChevronDown } from 'lucide-react'
 import EvaluationModal from './EvaluationModal'
 
 export default function PortalView() {
@@ -11,6 +11,7 @@ export default function PortalView() {
   const [selectedClasses, setSelectedClasses] = useState([])
   const [sortBy, setSortBy] = useState('priority')
   const [activeCandidate, setActiveCandidate] = useState(null)
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
 
   const positionsList = [
     'Back of House Team Member',
@@ -221,11 +222,41 @@ export default function PortalView() {
         </div>
       </div>
 
+      {/* Mobile Filter Toggle Button */}
+      <div className="lg:hidden flex items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
+        <button
+          onClick={() => setShowMobileFilters(!showMobileFilters)}
+          className="flex-1 flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-[#E51636]" />
+            <span>Filtros & Ordenar</span>
+            {(selectedPositions.length > 0 || selectedClasses.length > 0) && (
+              <span className="w-5 h-5 rounded-full bg-[#E51636] text-white text-[10px] flex items-center justify-center font-black">
+                {selectedPositions.length + selectedClasses.length}
+              </span>
+            )}
+          </div>
+          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} />
+        </button>
+
+        {(selectedPositions.length > 0 || selectedClasses.length > 0 || search) && (
+          <button
+            onClick={resetAll}
+            className="px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl cursor-pointer"
+          >
+            Limpiar
+          </button>
+        )}
+      </div>
+
       {/* Main Content Layout: Left Filter Sidebar + Right Candidates Grid */}
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         
-        {/* Left Filter Sidebar (Screenshot 2 style) */}
-        <aside className="w-full lg:w-64 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-6 shrink-0">
+        {/* Left Filter Sidebar (Collapsible on mobile, persistent on desktop) */}
+        <aside className={`w-full lg:w-64 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-6 shrink-0 transition-all ${
+          showMobileFilters ? 'block' : 'hidden lg:block'
+        }`}>
           {/* Sort Selector */}
           <div>
             <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
