@@ -105,26 +105,24 @@ def format_rich_candidates(raw_candidates: List[Dict[str, Any]]) -> List[Dict[st
         qa_list = c.get("parsed_qa", [])
 
         # CFA Experience & Multi-application detection
+        is_sa = "system" in puesto.lower()
         has_cfa_exp = False
         cfa_exp_details = []
         
-        for q in qa_list:
-            q_text = (q.get("pregunta") or "").lower()
-            a_text = (q.get("respuesta") or "").strip()
-            a_lower = a_text.lower()
+        # Systems Analyst does not use CFA Alumni badges (corporate IT role)
+        if not is_sa:
+            for q in qa_list:
+                q_text = (q.get("pregunta") or "").lower()
+                a_text = (q.get("respuesta") or "").strip()
+                a_lower = a_text.lower()
 
-            if "worked for chick-fil-a" in q_text or "franchisee" in q_text:
-                if a_lower.startswith("yes") or a_lower.startswith("si") or a_lower.startswith("sí"):
-                    has_cfa_exp = True
-                    cfa_exp_details.append(a_text)
-                elif any(kw in a_lower for kw in ["wayside", "holcombe", "meyerland", "galleria", "stafford", "sugar land", "cfa", "chick-fil-a", "store #", "location", "years"]) and not a_lower.startswith("no"):
-                    has_cfa_exp = True
-                    cfa_exp_details.append(a_text)
-
-            if "recent jobs" in q_text or "trabajos recientes" in q_text or "tell us about yourself" in q_text:
-                if "chick-fil-a" in a_lower or "chick fil a" in a_lower or "cfa " in a_lower or "cfa," in a_lower or "cfa 59" in a_lower:
-                    has_cfa_exp = True
-                    cfa_exp_details.append(a_text[:140])
+                # ONLY the official direct question: "Have you ever worked for Chick-fil-A, Inc. or a Chick-fil-A Franchisee?"
+                if "worked for chick-fil-a" in q_text or "worked for chick fil a" in q_text or "franchisee" in q_text:
+                    if a_lower in ["no", "no.", "never", "n/a", "none", "no i have not", "i have not", "no, i haven't"] or a_lower.startswith("no ") or a_lower.startswith("no,") or "have not worked" in a_lower or "never worked" in a_lower:
+                        continue
+                    elif a_lower.startswith("yes") or a_lower.startswith("si") or a_lower.startswith("sí") or any(kw in a_lower for kw in ["59 & kirby", "wayside", "holcombe", "meyerland", "galleria", "stafford", "sugar land", "fondren", "westhimer", "clarksville"]):
+                        has_cfa_exp = True
+                        cfa_exp_details.append(a_text)
 
         all_applied = multi_apps_map.get(c_name, [puesto])
         is_multi_app = len(all_applied) > 1
