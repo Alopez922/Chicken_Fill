@@ -72,8 +72,20 @@ def login(req: LoginRequest):
 # CANDIDATES PORTAL API (Rich Data)
 # ==========================================
 def format_rich_candidates(raw_candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    # Precompute multi-applications map by candidate name and email
+    multi_apps_map = {}
+    for c in raw_candidates:
+        c_name = (c.get("nombre") or "").strip().title()
+        c_pos = c.get("puesto_raw_sheet") or c.get("puesto") or "Front of House Team Member"
+        if c_name and c_name != "Sin Nombre":
+            if c_name not in multi_apps_map:
+                multi_apps_map[c_name] = []
+            if c_pos not in multi_apps_map[c_name]:
+                multi_apps_map[c_name].append(c_pos)
+
     formatted = []
     for c in raw_candidates:
+        c_name = (c.get("nombre") or "").strip().title()
         puesto = c.get("puesto", "Front of House Team Member")
         score = float(c.get("overall_score", 0.0))
         is_disq = bool(c.get("is_disqualified", False))
@@ -91,6 +103,31 @@ def format_rich_candidates(raw_candidates: List[Dict[str, Any]]) -> List[Dict[st
         details = c.get("details", [])
         sa_details = c.get("sa_details") or {}
         qa_list = c.get("parsed_qa", [])
+
+        # CFA Experience & Multi-application detection
+        has_cfa_exp = False
+        cfa_exp_details = []
+        
+        for q in qa_list:
+            q_text = (q.get("pregunta") or "").lower()
+            a_text = (q.get("respuesta") or "").strip()
+            a_lower = a_text.lower()
+
+            if "worked for chick-fil-a" in q_text or "franchisee" in q_text:
+                if a_lower.startswith("yes") or a_lower.startswith("si") or a_lower.startswith("sí"):
+                    has_cfa_exp = True
+                    cfa_exp_details.append(a_text)
+                elif any(kw in a_lower for kw in ["wayside", "holcombe", "meyerland", "galleria", "stafford", "sugar land", "cfa", "chick-fil-a", "store #", "location", "years"]) and not a_lower.startswith("no"):
+                    has_cfa_exp = True
+                    cfa_exp_details.append(a_text)
+
+            if "recent jobs" in q_text or "trabajos recientes" in q_text or "tell us about yourself" in q_text:
+                if "chick-fil-a" in a_lower or "chick fil a" in a_lower or "cfa " in a_lower or "cfa," in a_lower or "cfa 59" in a_lower:
+                    has_cfa_exp = True
+                    cfa_exp_details.append(a_text[:140])
+
+        all_applied = multi_apps_map.get(c_name, [puesto])
+        is_multi_app = len(all_applied) > 1
 
         open_text_items = []
         choice_items = []
@@ -146,8 +183,8 @@ def format_rich_candidates(raw_candidates: List[Dict[str, Any]]) -> List[Dict[st
 
         formatted.append({
             "uuid": c.get("uuid"),
-            "nombre": c.get("nombre", "Sin Nombre"),
-            "name": c.get("nombre", "Sin Nombre"),
+            "nombre": c_name or "Sin Nombre",
+            "name": c_name or "Sin Nombre",
             "puesto": puesto,
             "position": puesto,
             "clasificacion": clasif_label,
@@ -167,6 +204,10 @@ def format_rich_candidates(raw_candidates: List[Dict[str, Any]]) -> List[Dict[st
             "phone": c.get("telefono", "—"),
             "email": c.get("email", "—"),
             "summary": c.get("summary") or sa_details.get("disqualification_reason") or "",
+            "has_cfa_experience": has_cfa_exp,
+            "cfa_experience_detail": " | ".join(cfa_exp_details) if cfa_exp_details else "",
+            "is_multi_applicant": is_multi_app,
+            "applied_positions": all_applied,
             "detected_signals": detected_signals,
             "competency_profile": competency_profile,
             "open_text_items": open_text_items,

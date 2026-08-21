@@ -362,25 +362,61 @@ export default function PortalView() {
                 const applied = candidate.applied_date || candidate.fecha_aplicacion || ''
                 const phone = candidate.phone || candidate.telefono || ''
 
+                const hasCFA = Boolean(candidate.has_cfa_experience)
+                const isMulti = Boolean(candidate.is_multi_applicant)
+                const appliedPositions = candidate.applied_positions || []
+
+                let cardVisualClasses = "bg-white border-slate-200 shadow-xs hover:shadow-md"
+                if (hasCFA) {
+                  if (cls === 'GOLD') {
+                    cardVisualClasses = "bg-gradient-to-b from-amber-50/60 via-white to-white border-amber-300 ring-2 ring-amber-400/50 shadow-md shadow-amber-200/50 hover:shadow-lg hover:shadow-amber-200/70"
+                  } else if (cls === 'IDEAL') {
+                    cardVisualClasses = "bg-gradient-to-b from-emerald-50/60 via-white to-white border-emerald-300 ring-2 ring-emerald-400/50 shadow-md shadow-emerald-200/50 hover:shadow-lg hover:shadow-emerald-200/70"
+                  } else if (cls === 'POTENTIAL') {
+                    cardVisualClasses = "bg-gradient-to-b from-blue-50/60 via-white to-white border-blue-300 ring-2 ring-blue-400/50 shadow-md shadow-blue-200/50 hover:shadow-lg hover:shadow-blue-200/70"
+                  } else {
+                    cardVisualClasses = "bg-gradient-to-b from-rose-50/30 via-white to-white border-rose-200 shadow-xs hover:shadow-md"
+                  }
+                }
+
                 return (
                   <div
                     key={candidate.uuid || idx}
-                    className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                    className={`rounded-2xl border p-5 transition-all flex flex-col justify-between ${cardVisualClasses}`}
                   >
                     <div>
-                      {/* Name & Gold Badge Header */}
+                      {/* Name & Badges Header */}
                       <div className="flex items-start justify-between gap-2">
                         <h3 className="font-extrabold text-slate-900 text-sm leading-tight">
                           {name}
                         </h3>
-                        <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-md border shrink-0 ${
-                          cls === 'GOLD' ? 'bg-amber-50 text-amber-700 border-amber-300' :
-                          cls === 'IDEAL' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
-                          cls === 'POTENTIAL' ? 'bg-blue-50 text-blue-700 border-blue-300' :
-                          'bg-rose-50 text-rose-700 border-rose-300'
-                        }`}>
-                          {cls}
-                        </span>
+
+                        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                          {hasCFA && (
+                            <span 
+                              title={candidate.cfa_experience_detail || "Experiencia previa en Chick-fil-A"}
+                              className="text-[9px] font-black px-2 py-0.5 rounded-md bg-[#E51636] text-white shadow-xs tracking-tight flex items-center gap-1 cursor-help"
+                            >
+                              <span>🍗 Ex-Empleado CFA</span>
+                            </span>
+                          )}
+                          {isMulti && (
+                            <span 
+                              title={`Postulaciones detectadas (${appliedPositions.length}): ${appliedPositions.join(', ')}`}
+                              className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200 cursor-help"
+                            >
+                              📑 {appliedPositions.length} Puestos
+                            </span>
+                          )}
+                          <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-md border shrink-0 ${
+                            cls === 'GOLD' ? 'bg-amber-50 text-amber-700 border-amber-300' :
+                            cls === 'IDEAL' ? 'bg-emerald-50 text-emerald-700 border-emerald-300' :
+                            cls === 'POTENTIAL' ? 'bg-blue-50 text-blue-700 border-blue-300' :
+                            'bg-rose-50 text-rose-700 border-rose-300'
+                          }`}>
+                            {cls}
+                          </span>
+                        </div>
                       </div>
 
                       <p className="text-xs font-semibold text-slate-500 mt-0.5">{pos}</p>

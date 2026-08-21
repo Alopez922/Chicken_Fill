@@ -93,6 +93,40 @@ export default function EvaluationModal({ candidate, onClose }) {
             </div>
           </div>
 
+          {/* CFA Alumni Experience Banner */}
+          {candidate.has_cfa_experience && (
+            <div className="p-4 bg-gradient-to-r from-red-50 via-amber-50/50 to-red-50 border-2 border-red-300 rounded-2xl flex items-start gap-3 shadow-xs">
+              <div className="w-8 h-8 rounded-full bg-[#E51636] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
+                🍗
+              </div>
+              <div>
+                <h4 className="font-extrabold text-red-950 text-xs uppercase tracking-wider">
+                  Experiencia Previa en Chick-fil-A (CFA Alumni)
+                </h4>
+                <p className="text-xs text-red-900 font-medium mt-1 leading-relaxed">
+                  {candidate.cfa_experience_detail || 'Candidato con historial laboral comprobado en restaurantes Chick-fil-A.'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Multi-Applications Alert Banner */}
+          {candidate.is_multi_applicant && (
+            <div className="p-3.5 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-start gap-3 text-xs text-indigo-900 font-medium">
+              <span className="text-base shrink-0">📑</span>
+              <div>
+                <strong className="text-indigo-950 block">Aviso de Multi-Postulación ({candidate.applied_positions?.length} puestos detectados):</strong>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {candidate.applied_positions?.map((p, i) => (
+                    <span key={i} className="px-2.5 py-1 bg-white border border-indigo-200 rounded-lg text-[11px] font-bold text-indigo-700 shadow-2xs">
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Systems Analyst Competency Box (Screenshot 3 style) */}
           {isSA && (
             <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-3">
