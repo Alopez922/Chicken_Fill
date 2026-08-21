@@ -46,7 +46,8 @@ export default function PortalView() {
     fetchCandidates(false)
   }, [])
 
-  const filteredCandidates = useMemo(() => {
+  // 1. Filter candidates by Search and Position (the scope for the KPI cards)
+  const positionFiltered = useMemo(() => {
     return candidates.filter(c => {
       // Search
       if (search.trim()) {
@@ -57,12 +58,33 @@ export default function PortalView() {
         const matchPhone = (c.phone || c.telefono || '').toLowerCase().includes(q)
         if (!matchName && !matchPos && !matchEmail && !matchPhone) return false
       }
-      // Position filter
+      // Position filter (union of selected positions)
       if (selectedPositions.length > 0) {
-        const pos = c.position || c.puesto || ''
-        const matchesAny = selectedPositions.some(sp => pos.toLowerCase().includes(sp.toLowerCase()) || sp.toLowerCase().includes(pos.toLowerCase()))
+        const pos = (c.position || c.puesto || '').toLowerCase()
+        const matchesAny = selectedPositions.some(sp => {
+          const spLower = sp.toLowerCase()
+          return pos.includes(spLower) || spLower.includes(pos)
+        })
         if (!matchesAny) return false
       }
+      return true
+    })
+  }, [candidates, search, selectedPositions])
+
+  // 2. Metrics dynamically calculate from the position & search filtered candidates!
+  const metrics = useMemo(() => {
+    return {
+      total: positionFiltered.length,
+      gold: positionFiltered.filter(c => (c.classification || '').toUpperCase() === 'GOLD').length,
+      ideal: positionFiltered.filter(c => (c.classification || '').toUpperCase() === 'IDEAL').length,
+      potential: positionFiltered.filter(c => (c.classification || '').toUpperCase() === 'POTENTIAL').length,
+      dq: positionFiltered.filter(c => (c.classification || '').toUpperCase() === 'DISQUALIFIED').length,
+    }
+  }, [positionFiltered])
+
+  // 3. Final filtered and sorted candidates (including classification filter if any)
+  const filteredCandidates = useMemo(() => {
+    return positionFiltered.filter(c => {
       // Classification filter
       if (selectedClasses.length > 0) {
         const cls = (c.classification || c.clasificacion || '').toUpperCase()
@@ -78,17 +100,7 @@ export default function PortalView() {
       if (sortBy === 'date') return new Date(b.applied_date || 0) - new Date(a.applied_date || 0)
       return 0
     })
-  }, [candidates, search, selectedPositions, selectedClasses, sortBy])
-
-  const metrics = useMemo(() => {
-    return {
-      total: candidates.length,
-      gold: candidates.filter(c => (c.classification || '').toUpperCase() === 'GOLD').length,
-      ideal: candidates.filter(c => (c.classification || '').toUpperCase() === 'IDEAL').length,
-      potential: candidates.filter(c => (c.classification || '').toUpperCase() === 'POTENTIAL').length,
-      dq: candidates.filter(c => (c.classification || '').toUpperCase() === 'DISQUALIFIED').length,
-    }
-  }, [candidates])
+  }, [positionFiltered, selectedClasses, sortBy])
 
   const togglePosition = (pos) => {
     setSelectedPositions(prev =>
@@ -143,7 +155,7 @@ export default function PortalView() {
 
           <button
             onClick={resetAll}
-            className="px-3.5 py-1.5 bg-[#E51636] hover:bg-[#c8102e] text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1"
+            className="px-3.5 py-1.5 bg-[#E51636] hover:bg-[#c8102e] text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1 cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Reset</span>
@@ -151,33 +163,58 @@ export default function PortalView() {
         </div>
       </div>
 
-      {/* KPI Cards Strip (Screenshot 2 style) */}
+      {/* KPI Cards Strip (Screenshot 2 style - dynamically updates with filters) */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <div className="p-4 bg-white rounded-2xl border-2 border-[#E51636] shadow-xs text-left">
+        <div 
+          onClick={() => setSelectedClasses([])}
+          className={`p-4 bg-white rounded-2xl border-2 shadow-xs text-left cursor-pointer transition-all ${
+            selectedClasses.length === 0 ? 'border-[#E51636] ring-2 ring-red-500/20' : 'border-slate-200 hover:border-slate-300'
+          }`}
+        >
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TOTAL</div>
           <div className="text-3xl font-black text-slate-900 mt-0.5">{metrics.total}</div>
           <div className="text-[11px] text-slate-400 font-medium">candidates</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs text-left">
+        <div 
+          onClick={() => toggleClass('GOLD')}
+          className={`p-4 bg-white rounded-2xl border shadow-xs text-left cursor-pointer transition-all ${
+            selectedClasses.includes('GOLD') ? 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50/20' : 'border-slate-200 hover:border-amber-300'
+          }`}
+        >
           <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">GOLD</div>
           <div className="text-3xl font-black text-amber-600 mt-0.5">{metrics.gold}</div>
           <div className="text-[11px] text-slate-400 font-medium">≥ 97%</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs text-left">
+        <div 
+          onClick={() => toggleClass('Ideal')}
+          className={`p-4 bg-white rounded-2xl border shadow-xs text-left cursor-pointer transition-all ${
+            selectedClasses.includes('Ideal') ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20' : 'border-slate-200 hover:border-emerald-300'
+          }`}
+        >
           <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">IDEAL</div>
           <div className="text-3xl font-black text-emerald-600 mt-0.5">{metrics.ideal}</div>
           <div className="text-[11px] text-slate-400 font-medium">75% - 96%</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs text-left">
+        <div 
+          onClick={() => toggleClass('Potential')}
+          className={`p-4 bg-white rounded-2xl border shadow-xs text-left cursor-pointer transition-all ${
+            selectedClasses.includes('Potential') ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20' : 'border-slate-200 hover:border-blue-300'
+          }`}
+        >
           <div className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">POTENTIAL</div>
           <div className="text-3xl font-black text-blue-600 mt-0.5">{metrics.potential}</div>
           <div className="text-[11px] text-slate-400 font-medium">50% - 74%</div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs text-left col-span-2 sm:col-span-1">
+        <div 
+          onClick={() => toggleClass('Disqualified')}
+          className={`p-4 bg-white rounded-2xl border shadow-xs text-left col-span-2 sm:col-span-1 cursor-pointer transition-all ${
+            selectedClasses.includes('Disqualified') ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20' : 'border-slate-200 hover:border-rose-300'
+          }`}
+        >
           <div className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">DISQUALIFIED</div>
           <div className="text-3xl font-black text-rose-600 mt-0.5">{metrics.dq}</div>
           <div className="text-[11px] text-slate-400 font-medium">auto-disqualified</div>
