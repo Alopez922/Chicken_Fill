@@ -198,21 +198,36 @@ def format_rich_candidates(raw_candidates: List[Dict[str, Any]]) -> List[Dict[st
 
         # Build concise human-readable summary for card
         disq_summary = ""
+        is_sa_pos = "system" in puesto.lower()
         if is_disq or clasif_label == "DISQUALIFIED":
-            if disq_reasons:
+            if is_sa_pos:
+                disq_summary = sa_details.get("disqualification_reason") or "No cumple requisitos técnicos de TI (Carrera + 2 años exp)"
+            elif disq_reasons:
                 first_r = disq_reasons[0].lower()
-                if "felony" in first_r or "antecedentes" in first_r or "convicted" in first_r:
-                    disq_summary = "Antecedentes declarados"
-                elif "scheduled hours" in first_r or "horario" in first_r:
+                if "50 lbs" in first_r or "stand on your feet" in first_r or "levantar" in first_r or "lift up" in first_r:
+                    disq_summary = "No puede levantar 50 lbs / estar de pie"
+                elif "felony" in first_r or "antecedentes" in first_r or "convicted" in first_r or "misdemeanor" in first_r:
+                    disq_summary = "Antecedentes penales declarados"
+                elif "scheduled hours" in first_r or "normal scheduled" in first_r:
                     disq_summary = "Horario limitado ('You work scheduled hours only')"
-                elif "grade" in first_r or "school" in first_r or "12th" in first_r:
+                elif "grade" in first_r or "12th grade" in first_r or "secondary school" in first_r:
                     disq_summary = "Nivel educativo ('12th grade')"
+                elif "driver license" in first_r or "licencia" in first_r:
+                    disq_summary = "Sin licencia de conducir válida"
+                elif "insurance" in first_r or "seguro" in first_r:
+                    disq_summary = "Sin seguro vehicular activo"
+                elif "authorized to work" in first_r or "autorizacion" in first_r or "legal" in first_r:
+                    disq_summary = "Sin autorización legal de trabajo"
+                elif "18 years" in first_r or "16 years" in first_r or "age" in first_r:
+                    disq_summary = "Requisito de edad mínima"
                 elif "distancia" in first_r or "miles" in first_r or dist_m > 35.0:
                     disq_summary = f"Distancia excesiva ({dist_m} mi)"
-                elif "tecnica" in first_r or "it" in first_r or "analyst" in first_r:
-                    disq_summary = "No cumple requisitos técnicos de TI"
                 else:
-                    disq_summary = disq_reasons[0].split("➔")[-1].replace("(Criterio excluyente en el Google Sheet)", "").strip(" '")[:40]
+                    # Clean the question text directly
+                    clean_text = disq_reasons[0].split("➔")[0].replace("Pregunta: '", "").replace("*", "").strip(" '")
+                    if len(clean_text) > 35:
+                        clean_text = clean_text[:32] + "..."
+                    disq_summary = clean_text
             elif score < 50.0:
                 disq_summary = f"Puntaje insuficiente ({score}%)"
             else:
