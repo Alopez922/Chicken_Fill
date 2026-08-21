@@ -30,7 +30,7 @@ export default function ChatbotWidget({ isOpen, onClose, onOpen }) {
   const quickQuestions = [
     { label: '🍳 Mejor para Cocina (BOH)', text: '¿Cuál es el mejor candidato para Back of House Team Member (Cocina) y por qué?' },
     { label: '💻 Top Systems Analyst', text: '¿Cuáles son los mejores candidatos para Systems Analyst que cumplen con educación en TI y 2+ años de experiencia?' },
-    { label: '🛎️ Top 3 Front of House', text: 'Dame el top 3 de candidatos con experiencia para Front of House Team Member.' },
+    { label: '🛎️ Top 3 Front of House', text: 'Dame el top 3 de mejores candidatos para Front of House Team Member según el framework oficial.' },
     { label: '🏆 Mejor por Puesto', text: '¿Cuál es el mejor candidato para cada uno de los 7 puestos de la tienda aplicando el framework oficial?' },
     { label: '🔍 Auditar Sheet', text: 'Audita el Google Sheet contra la API de Workstream en tiempo real y dime si hay inconsistencias.' },
   ]
