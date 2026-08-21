@@ -395,8 +395,8 @@ components.html(f"""
     bub.className = 'cfa-msg-bubble';
     bub.innerHTML = text
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g,'<em>$1</em>')
+      .replace(/[*][*](.*?)[*][*]/g,'<strong>$1</strong>')
+      .replace(/[*](.*?)[*]/g,'<em>$1</em>')
       .replace(/\\n/g,'<br>');
     row.appendChild(bub);
     return row;
