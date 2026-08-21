@@ -338,7 +338,7 @@ _chat_history_js = json.dumps([
 st.markdown(f"""
 <div id="cfa-chat-launcher">
   <div id="cfa-chat-bubble-hint">¿Quieres saber algo sobre los candidatos? 🍗 ¡Pregúntame!</div>
-  <button id="cfa-chat-btn" onclick="cfaOpenChat()" aria-label="Abrir chat Headhunter IA">
+  <button id="cfa-chat-btn" aria-label="Abrir chat Headhunter IA">
     <img src="data:image/png;base64,{_logo}" alt="CFA" />
   </button>
 </div>
@@ -350,115 +350,134 @@ st.markdown(f"""
       <h3>Headhunter IA 🍗</h3>
       <p>CFA Stafford · En línea</p>
     </div>
-    <button id="cfa-chat-close" onclick="cfaCloseChat()" aria-label="Cerrar chat">✕</button>
+    <button id="cfa-chat-close" aria-label="Cerrar chat">✕</button>
   </div>
   <div id="cfa-chat-messages"></div>
   <div id="cfa-chat-input-bar">
-    <input id="cfa-chat-input" type="text" placeholder="Escribe una pregunta..." autocomplete="off"
-      onkeydown="if(event.key==='Enter')cfaSendMsg()" />
-    <button id="cfa-chat-send" onclick="cfaSendMsg()" aria-label="Enviar">
+    <input id="cfa-chat-input" type="text" placeholder="Escribe una pregunta..." autocomplete="off" />
+    <button id="cfa-chat-send" aria-label="Enviar">
       <svg fill="none" stroke="#fff" stroke-width="2.2" viewBox="0 0 24 24">
         <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
       </svg>
     </button>
   </div>
 </div>
+""", unsafe_allow_html=True)
 
+# JS bridge: st.components.v1.html() DOES execute scripts and can access parent DOM
+components.html(f"""
 <script>
 (function() {{
+  var LOGO = "data:image/png;base64,{_logo}";
   var HISTORY = {_chat_history_js};
   var hintHidden = false;
+  var doc = window.parent.document;
 
-  function renderHistory() {{
-    var box = document.getElementById('cfa-chat-messages');
-    if (!box) return;
-    box.innerHTML = '';
-    HISTORY.forEach(function(m) {{
-      box.appendChild(buildBubble(m.role, m.content));
-    }});
-    box.scrollTop = box.scrollHeight;
+  function waitForEl(id, cb, tries) {{
+    tries = tries || 0;
+    var el = doc.getElementById(id);
+    if (el) {{ cb(el); return; }}
+    if (tries < 40) setTimeout(function() {{ waitForEl(id, cb, tries+1); }}, 150);
   }}
 
   function buildBubble(role, text) {{
-    var row = document.createElement('div');
+    var row = doc.createElement('div');
     row.className = 'cfa-msg-row' + (role === 'user' ? ' user' : '');
     if (role !== 'user') {{
-      var av = document.createElement('div');
+      var av = doc.createElement('div');
       av.className = 'cfa-msg-avatar';
-      av.innerHTML = '<img src="data:image/png;base64,{_logo}" alt="AI"/>';
+      var img = doc.createElement('img');
+      img.src = LOGO; img.alt = 'AI';
+      av.appendChild(img);
       row.appendChild(av);
     }}
-    var bub = document.createElement('div');
+    var bub = doc.createElement('div');
     bub.className = 'cfa-msg-bubble';
-    // Render markdown bold and line breaks simply
     bub.innerHTML = text
       .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
       .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
       .replace(/\*(.*?)\*/g,'<em>$1</em>')
-      .replace(/\n/g,'<br>');
+      .replace(/\\n/g,'<br>');
     row.appendChild(bub);
     return row;
   }}
 
-  function showTyping() {{
-    var box = document.getElementById('cfa-chat-messages');
-    var row = document.createElement('div');
-    row.className = 'cfa-msg-row';
-    row.id = 'cfa-typing';
-    var av = document.createElement('div');
-    av.className = 'cfa-msg-avatar';
-    av.innerHTML = '<img src="data:image/png;base64,{_logo}" alt="AI"/>';
-    row.appendChild(av);
-    var bub = document.createElement('div');
-    bub.className = 'cfa-msg-bubble';
-    bub.innerHTML = '<div class="cfa-typing-dots"><span></span><span></span><span></span></div>';
-    row.appendChild(bub);
-    box.appendChild(row);
+  function renderHistory() {{
+    var box = doc.getElementById('cfa-chat-messages');
+    if (!box) return;
+    box.innerHTML = '';
+    HISTORY.forEach(function(m) {{ box.appendChild(buildBubble(m.role, m.content)); }});
     box.scrollTop = box.scrollHeight;
   }}
 
-  window.cfaOpenChat = function() {{
-    var panel = document.getElementById('cfa-chat-panel');
+  function showTyping() {{
+    var box = doc.getElementById('cfa-chat-messages');
+    if (!box) return;
+    var row = doc.createElement('div');
+    row.className = 'cfa-msg-row'; row.id = 'cfa-typing';
+    var av = doc.createElement('div'); av.className = 'cfa-msg-avatar';
+    var img = doc.createElement('img'); img.src = LOGO; img.alt = '';
+    av.appendChild(img); row.appendChild(av);
+    var bub = doc.createElement('div'); bub.className = 'cfa-msg-bubble';
+    bub.innerHTML = '<div class="cfa-typing-dots"><span></span><span></span><span></span></div>';
+    row.appendChild(bub); box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+  }}
+
+  function openChat() {{
+    var panel = doc.getElementById('cfa-chat-panel');
+    if (!panel) return;
     panel.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    doc.body.style.overflow = 'hidden';
     if (!hintHidden) {{
-      var hint = document.getElementById('cfa-chat-bubble-hint');
+      var hint = doc.getElementById('cfa-chat-bubble-hint');
       if (hint) hint.style.display = 'none';
       hintHidden = true;
     }}
     renderHistory();
     setTimeout(function() {{
-      var inp = document.getElementById('cfa-chat-input');
+      var inp = doc.getElementById('cfa-chat-input');
       if (inp) inp.focus();
     }}, 300);
-  }};
+  }}
 
-  window.cfaCloseChat = function() {{
-    var panel = document.getElementById('cfa-chat-panel');
-    panel.classList.remove('open');
-    document.body.style.overflow = '';
-  }};
+  function closeChat() {{
+    var panel = doc.getElementById('cfa-chat-panel');
+    if (panel) panel.classList.remove('open');
+    doc.body.style.overflow = '';
+  }}
 
-  window.cfaSendMsg = function() {{
-    var inp = document.getElementById('cfa-chat-input');
+  function sendMsg() {{
+    var inp = doc.getElementById('cfa-chat-input');
     if (!inp) return;
     var msg = inp.value.trim();
     if (!msg) return;
     inp.value = '';
-    // Show user bubble immediately
-    var box = document.getElementById('cfa-chat-messages');
-    box.appendChild(buildBubble('user', msg));
-    box.scrollTop = box.scrollHeight;
+    var box = doc.getElementById('cfa-chat-messages');
+    if (box) {{ box.appendChild(buildBubble('user', msg)); box.scrollTop = box.scrollHeight; }}
     showTyping();
     HISTORY.push({{role:'user', content:msg}});
-    // Submit to Streamlit via query param
-    var url = window.location.pathname + '?cfa_mobile_msg=' + encodeURIComponent(msg);
-    window.location.href = url;
-  }};
+    var url = window.parent.location.pathname + '?cfa_mobile_msg=' + encodeURIComponent(msg);
+    window.parent.location.href = url;
+  }}
+
+  // Wire up buttons after DOM is ready
+  waitForEl('cfa-chat-btn', function(btn) {{
+    btn.addEventListener('click', openChat);
+  }});
+  waitForEl('cfa-chat-close', function(btn) {{
+    btn.addEventListener('click', closeChat);
+  }});
+  waitForEl('cfa-chat-send', function(btn) {{
+    btn.addEventListener('click', sendMsg);
+  }});
+  waitForEl('cfa-chat-input', function(inp) {{
+    inp.addEventListener('keydown', function(e) {{ if (e.key === 'Enter') sendMsg(); }});
+  }});
 
   // Auto-hide hint after 6s
   setTimeout(function() {{
-    var hint = document.getElementById('cfa-chat-bubble-hint');
+    var hint = doc.getElementById('cfa-chat-bubble-hint');
     if (hint && !hintHidden) {{
       hint.style.transition = 'opacity 0.5s';
       hint.style.opacity = '0';
@@ -467,7 +486,8 @@ st.markdown(f"""
   }}, 6000);
 }})();
 </script>
-""", unsafe_allow_html=True)
+""", height=0)
+
 
 # ==========================================
 # LIENZO PRINCIPAL CON PESTAÑAS
